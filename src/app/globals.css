@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #A87521 #120B07;
+}
+
+body {
+  background-color: #120B07;
+  color: #F5EDD8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  font-family: var(--font-sans), sans-serif;
+  font-feature-settings: 'kern', 'liga', 'calt';
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #120B07;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #A87521;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C4912A;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+/* ─── Logo wordmark — Rubik Dirt tuning ───────────── */
+.font-logo {
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+/* ─── Scroll Reveal (GSAP controls final state) ───── */
+.reveal,
+.reveal-left,
+.reveal-right {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* ─── Form focus ring ─────────────────────────────── */
+.field-input {
+  background: rgba(18, 11, 7, 0.5);
+  border: 1px solid rgba(212, 168, 67, 0.18);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: #F5EDD8;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.94rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.field-input::placeholder {
+  color: rgba(245, 237, 216, 0.3);
+}
+
+.field-input:focus {
+  border-color: #C4912A;
+  box-shadow: 0 0 0 3px rgba(196, 145, 42, 0.12);
+}
+
+.field-input option {
+  background: #231710;
+}
+
+select.field-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23D4A843' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+
+/* Subtle film grain */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Reusable thin-rule eyebrow */
+.eyebrow-rule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.eyebrow-rule::before {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: rgba(196, 145, 42, 0.6);
+}
+
