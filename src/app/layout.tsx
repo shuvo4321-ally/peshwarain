@@ -4,10 +4,13 @@ import {
   Newsreader,
   Inter,
   Noto_Nastaliq_Urdu,
+  Noto_Sans_Bengali,
   Rubik_Dirt,
 } from 'next/font/google'
 import localFont from 'next/font/local'
 import './globals.css'
+import Cursor from '@/components/Cursor'
+import PageLoader from '@/components/PageLoader'
 
 const rubikDirt = Rubik_Dirt({
   subsets: ['latin'],
@@ -43,6 +46,13 @@ const urdu = Noto_Nastaliq_Urdu({
   subsets: ['arabic'],
   weight: ['400', '600'],
   variable: '--font-urdu',
+  display: 'swap',
+})
+
+const notoSansBengali = Noto_Sans_Bengali({
+  subsets: ['bengali'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-bangla-noto',
   display: 'swap',
 })
 
@@ -110,9 +120,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="bn"
-      className={`${rubikDirt.variable} ${fraunces.variable} ${newsreader.variable} ${inter.variable} ${urdu.variable} ${momenshahiArdha.variable} ${momenshahiPurna.variable} ${codepotro.variable} ${hidayatullah.variable}`}
+      className={`${rubikDirt.variable} ${fraunces.variable} ${newsreader.variable} ${inter.variable} ${urdu.variable} ${notoSansBengali.variable} ${momenshahiArdha.variable} ${momenshahiPurna.variable} ${codepotro.variable} ${hidayatullah.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <PageLoader />
+        <Cursor />
+        {children}
+      </body>
     </html>
   )
 }

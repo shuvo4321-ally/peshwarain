@@ -40,6 +40,7 @@ const config: Config = {
         banglaDisplay: ['var(--font-bangla-display)', 'sans-serif'],
         urdu: ['var(--font-urdu)', 'serif'],
         hidayatullah: ['var(--font-hidayatullah)', 'serif'],
+        banglaNoto: ['var(--font-bangla-noto)', 'sans-serif'],
       },
       maxWidth: {
         container: '1280px',

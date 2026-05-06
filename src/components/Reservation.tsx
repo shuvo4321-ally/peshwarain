@@ -154,6 +154,7 @@ export default function Reservation() {
 
               <button
                 type="submit"
+                data-cursor="Reserve"
                 disabled={status !== 'idle'}
                 className={`w-full py-3.5 rounded-full font-sans transition-all duration-300 ${
                   status === 'success'
