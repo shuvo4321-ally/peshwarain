@@ -5,6 +5,7 @@ import {
   Inter,
   Noto_Nastaliq_Urdu,
   Noto_Sans_Bengali,
+  Tiro_Bangla,
   Rubik_Dirt,
 } from 'next/font/google'
 import localFont from 'next/font/local'
@@ -53,6 +54,14 @@ const notoSansBengali = Noto_Sans_Bengali({
   subsets: ['bengali'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-bangla-noto',
+  display: 'swap',
+})
+
+const tiroBangla = Tiro_Bangla({
+  subsets: ['bengali'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-bangla-tiro',
   display: 'swap',
 })
 
@@ -120,7 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="bn"
-      className={`${rubikDirt.variable} ${fraunces.variable} ${newsreader.variable} ${inter.variable} ${urdu.variable} ${notoSansBengali.variable} ${momenshahiArdha.variable} ${momenshahiPurna.variable} ${codepotro.variable} ${hidayatullah.variable}`}
+      className={`${rubikDirt.variable} ${fraunces.variable} ${newsreader.variable} ${inter.variable} ${urdu.variable} ${notoSansBengali.variable} ${tiroBangla.variable} ${momenshahiArdha.variable} ${momenshahiPurna.variable} ${codepotro.variable} ${hidayatullah.variable}`}
     >
       <body>
         <PageLoader />

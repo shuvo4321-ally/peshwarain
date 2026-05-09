@@ -41,6 +41,7 @@ const config: Config = {
         urdu: ['var(--font-urdu)', 'serif'],
         hidayatullah: ['var(--font-hidayatullah)', 'serif'],
         banglaNoto: ['var(--font-bangla-noto)', 'sans-serif'],
+        banglaTiro: ['var(--font-bangla-tiro)', 'serif'],
       },
       maxWidth: {
         container: '1280px',

@@ -13,12 +13,6 @@ export default function PageLoader() {
   const [done, setDone] = useState(false)
 
   useEffect(() => {
-    if (sessionStorage.getItem('pwr-seen')) {
-      setDone(true)
-      return
-    }
-    sessionStorage.setItem('pwr-seen', '1')
-
     const root = rootRef.current
     const counter = counterRef.current
     if (!root || !counter) return
@@ -32,17 +26,48 @@ export default function PageLoader() {
     tl.fromTo('.pwr-loader-mark', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.7 })
       .fromTo('.pwr-loader-bar', { scaleX: 0 }, { scaleX: 1, duration: 1.0, ease: 'power2.inOut' }, '-=0.3')
       .to(obj, {
-        v: 100,
+        v: 99,
         duration: 1.0,
         ease: 'power2.inOut',
         onUpdate: () => {
-          counter.textContent = toBn(Math.round(obj.v))
+          if (counterRef.current) counterRef.current.textContent = toBn(Math.round(obj.v))
         },
       }, '-=1.0')
-      .to('.pwr-loader-content', { opacity: 0, y: -10, duration: 0.45, ease: 'power2.in' }, '+=0.15')
-      .to('.pwr-loader-veil-top', { y: '-100%', duration: 0.85, ease: 'power3.inOut' }, '-=0.15')
-      .to('.pwr-loader-veil-bot', { y: '100%', duration: 0.85, ease: 'power3.inOut' }, '<')
-      .add(() => setDone(true))
+      .add(() => {
+        let isFinishing = false
+        const finishLoading = () => {
+          if (isFinishing) return
+          isFinishing = true
+          gsap.timeline({ defaults: { ease: 'power3.out' } })
+            .to(obj, {
+              v: 100,
+              duration: 0.2,
+              onUpdate: () => {
+                if (counterRef.current) counterRef.current.textContent = toBn(Math.round(obj.v))
+              }
+            })
+            .to('.pwr-loader-content', { opacity: 0, y: -10, duration: 0.45, ease: 'power2.in' }, '+=0.15')
+            .to('.pwr-loader-veil-top', { y: '-100%', duration: 0.85, ease: 'power3.inOut' }, '-=0.15')
+            .to('.pwr-loader-veil-bot', { y: '100%', duration: 0.85, ease: 'power3.inOut' }, '<')
+            .add(() => setDone(true))
+        }
+
+        if ((window as any).pwrVideoLoaded) {
+          finishLoading()
+        } else {
+          const handler = () => {
+            window.removeEventListener('pwr-video-loaded', handler)
+            finishLoading()
+          }
+          window.addEventListener('pwr-video-loaded', handler)
+          
+          // Fallback to avoid infinite loading
+          setTimeout(() => {
+            window.removeEventListener('pwr-video-loaded', handler)
+            finishLoading()
+          }, 6000)
+        }
+      })
 
     return () => { tl.kill() }
   }, [])

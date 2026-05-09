@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { splitText } from '@/hooks/useSplitText'
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null)
@@ -125,8 +128,6 @@ export default function Hero() {
         rotateX: 70,
       })
       gsap.set(subSplit.words, { yPercent: 50, opacity: 0, filter: 'blur(10px)' })
-      gsap.set('.pwr-hero-eyebrow', { opacity: 0, scale: 0.8, filter: 'blur(8px)' })
-      gsap.set('.pwr-hero-scroll-cue', { opacity: 0, y: 30 })
 
       // ── Timeline ──
       const tl = gsap.timeline({ delay: 0.4, defaults: { ease: 'power4.out' } })
@@ -138,50 +139,112 @@ export default function Hero() {
         0
       )
 
-      // 2 · Eyebrow — soft blur-to-sharp entrance
-      .to('.pwr-hero-eyebrow', {
-        opacity: 1, scale: 1, filter: 'blur(0px)',
-        duration: 1.2, ease: 'power3.out',
-      }, 0.3)
+        // 2 · Line 1 words — dramatic 3D rise with blur clear
+        .to(line1Words, {
+          yPercent: 0,
+          opacity: 1,
+          scale: 1,
+          filter: 'blur(0px)',
+          rotateX: 0,
+          duration: 1.4,
+          stagger: 0.14,
+          ease: 'expo.out',
+        }, 0.7)
 
-      // 3 · Line 1 words — dramatic 3D rise with blur clear
-      .to(line1Words, {
-        yPercent: 0,
-        opacity: 1,
-        scale: 1,
-        filter: 'blur(0px)',
-        rotateX: 0,
-        duration: 1.4,
-        stagger: 0.14,
-        ease: 'expo.out',
-      }, 0.7)
+        // 3 · Line 2 words — cascading entrance, slightly delayed
+        .to(line2Words, {
+          yPercent: 0,
+          opacity: 1,
+          scale: 1,
+          filter: 'blur(0px)',
+          rotateX: 0,
+          duration: 1.4,
+          stagger: 0.14,
+          ease: 'expo.out',
+        }, 1.2)
 
-      // 4 · Line 2 words — cascading entrance, slightly delayed
-      .to(line2Words, {
-        yPercent: 0,
-        opacity: 1,
-        scale: 1,
-        filter: 'blur(0px)',
-        rotateX: 0,
-        duration: 1.4,
-        stagger: 0.14,
-        ease: 'expo.out',
-      }, 1.2)
-
-      // 6 · Subtitle — blur-to-sharp word reveal
-      .to(subSplit.words, {
-        yPercent: 0, opacity: 1, filter: 'blur(0px)',
-        duration: 1, stagger: 0.07, ease: 'power3.out',
-      }, 1.9)
-
-      // 7 · Scroll cue — elastic bounce in
-      .to('.pwr-hero-scroll-cue', {
-        opacity: 1, y: 0,
-        duration: 1.2, ease: 'elastic.out(1, 0.75)',
-      }, '-=0.4')
+        // 4 · Subtitle — blur-to-sharp word reveal
+        .to(subSplit.words, {
+          yPercent: 0, opacity: 1, filter: 'blur(0px)',
+          duration: 1, stagger: 0.07, ease: 'power3.out',
+        }, 1.9)
     },
     { scope: heroRef }
   )
+
+  // ── Staggered fade-out on scroll (hero content exits) ──
+  useGSAP(
+    () => {
+      const contentEl = heroRef.current?.querySelector('.relative.z-20')
+      if (!contentEl) return
+
+      // Fade out hero text with staggered blur as user scrolls
+      gsap.to(contentEl.children, {
+        opacity: 0,
+        y: -40,
+        filter: 'blur(12px)',
+        stagger: 0.08,
+        ease: 'power2.in',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'bottom 90%',
+          end: 'bottom 30%',
+          scrub: 0.8,
+        },
+      })
+
+      // Parallax the video slightly faster for depth
+      gsap.to('[data-parallax]', {
+        yPercent: -15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      })
+    },
+    { scope: heroRef }
+  )
+
+  // ── Split-screen reveal transition ──
+  useGSAP(() => {
+    const splitReveal = document.querySelector('.pwr-split-reveal')
+    if (!splitReveal) return
+
+    // Initial state — stagger items hidden
+    gsap.set('.pwr-stagger-item', { opacity: 0, y: 30, filter: 'blur(8px)' })
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: splitReveal,
+        start: 'top 80%',
+        end: 'top 20%',
+        scrub: 0.6,
+      },
+    })
+
+    // Curtains slide apart
+    tl.to('.pwr-curtain-left', { xPercent: -100, ease: 'power3.inOut' }, 0)
+      .to('.pwr-curtain-right', { xPercent: 100, ease: 'power3.inOut' }, 0)
+      .to('.pwr-curtain-seam', { opacity: 0, duration: 0.3 }, 0)
+
+    // Staggered fade-in of content behind curtains
+    gsap.to('.pwr-stagger-item', {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      stagger: 0.15,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: splitReveal,
+        start: 'top 60%',
+        end: 'top 25%',
+        scrub: 0.5,
+      },
+    })
+  })
 
   // Subtle mouse parallax — video only
   useEffect(() => {
@@ -226,14 +289,17 @@ export default function Hero() {
       >
         {/* Video background */}
         <video
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1.5s] scale-105 ${
-            videoLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1.5s] scale-105 ${videoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
           autoPlay
           muted
           loop
           playsInline
-          onCanPlay={() => setVideoLoaded(true)}
+          onCanPlay={() => {
+            setVideoLoaded(true)
+              ; (window as any).pwrVideoLoaded = true
+            window.dispatchEvent(new Event('pwr-video-loaded'))
+          }}
           data-parallax="-8"
         >
           <source src="/hero-video.mp4" type="video/mp4" />
@@ -274,58 +340,41 @@ export default function Hero() {
         </div>
 
         {/* ── Content ── */}
-        <div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-6 md:px-16">
+        <div className="relative z-20 h-full flex flex-col justify-end pb-[12vh] md:pb-[14vh] px-8 md:px-20 lg:px-28">
 
-          {/* Eyebrow — editorial mixed-script ornament */}
-          <div className="pwr-hero-eyebrow flex flex-col items-center gap-3 mb-10 md:mb-14">
-            <div className="flex items-center gap-4 md:gap-6">
-              <span className="font-urdu text-gold-400/40 text-sm md:text-base" dir="rtl" style={{ letterSpacing: '0.06em' }}>پشاور</span>
-              <span className="flex items-center gap-2.5">
-                <span className="block w-6 md:w-10 h-px bg-gradient-to-r from-transparent to-gold-400/40" />
-                <span className="block w-[5px] h-[5px] bg-[#F8B425] rotate-45 shadow-[0_0_10px_rgba(248,180,37,0.5)]" />
-                <span className="block w-6 md:w-10 h-px bg-gradient-to-l from-transparent to-gold-400/40" />
-              </span>
-              <span className="font-bangla text-gold-400/40 text-sm md:text-base">ঢাকা</span>
-            </div>
-            <span
-              className="font-sans text-gold-300/45 text-[0.54rem] md:text-[0.6rem]"
-              style={{ letterSpacing: '0.6em', fontWeight: 300, textTransform: 'uppercase' }}
-            >
-              Heritage
-            </span>
-          </div>
 
-          {/* Headline — two clean block lines, no gap bug */}
+          {/* Headline — left-aligned, Tiro Bangla serif */}
           <h1
             ref={headlineRef}
             className="pwr-hero-headline font-bangla text-cream"
             style={{
-              fontSize: 'clamp(2.4rem, 7vw, 6.8rem)',
-              lineHeight: 1.1,
-              letterSpacing: '0.005em',
+              fontSize: 'clamp(2rem, 5.5vw, 5.2rem)',
+              lineHeight: 1.15,
+              letterSpacing: '0.01em',
               perspective: '800px',
             }}
           >
             <span className="block">
               <span className="pwr-hl-word inline-block text-[#F8B425] letterpress">নেহারী</span>
-              <span className="pwr-hl-word inline-block mx-[0.12em]">থেকে</span>
+              <span className="pwr-hl-word inline-block mx-[0.15em]">থেকে</span>
               <span className="pwr-hl-word inline-block text-[#F8B425] letterpress">কাবাব</span>
             </span>
-            <span className="block mt-1 md:mt-3">
+            <span className="block mt-1 md:mt-2">
               <span className="pwr-hl-word inline-block">স্বাদে</span>
-              <span className="pwr-hl-word inline-block mx-[0.12em] text-[#F8B425] letterpress">আমরাই</span>
+              <span className="pwr-hl-word inline-block mx-[0.15em] text-[#F8B425] letterpress">আমরাই</span>
               <span className="pwr-hl-word inline-block">নবাব</span>
             </span>
           </h1>
 
-          {/* Subtitle — text-shadow for guaranteed contrast */}
+
+          {/* Subtitle — Tiro Bangla italic, literary feel */}
           <p
             ref={subRef}
-            className="font-banglaDisplay text-gold-200/80 mt-7 md:mt-10 max-w-[38ch]"
+            className="font-banglaDisplay text-gold-200/70 mt-5 md:mt-6 max-w-[36ch]"
             style={{
-              fontSize: 'clamp(0.92rem, 1.4vw, 1.25rem)',
-              lineHeight: 1.65,
-              letterSpacing: '0.01em',
+              fontSize: 'clamp(0.88rem, 1.3vw, 1.15rem)',
+              lineHeight: 1.7,
+              letterSpacing: '0.015em',
               textShadow: '0 2px 20px rgba(0,0,0,0.7)',
             }}
           >
@@ -335,18 +384,7 @@ export default function Hero() {
 
         </div>
 
-        {/* Scroll indicator — animated pulse line */}
-        <div className="pwr-hero-scroll-cue absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
-          <span
-            className="font-sans text-gold-400/35 text-[0.56rem]"
-            style={{ letterSpacing: '0.35em' }}
-          >
-            SCROLL
-          </span>
-          <span className="pwr-scroll-line block w-px h-10 md:h-14 relative overflow-hidden bg-gold-400/10">
-            <span className="pwr-scroll-dot absolute left-0 w-full h-3 bg-gradient-to-b from-[#F8B425]/80 to-transparent" />
-          </span>
-        </div>
+
 
         {/* Bottom fade */}
         <div
@@ -355,13 +393,58 @@ export default function Hero() {
         />
       </section>
 
+      {/* ── Split-Screen Reveal Transition ── */}
+      <div className="pwr-split-reveal relative h-[50vh] md:h-[60vh] overflow-hidden" style={{ background: '#120B07' }}>
+        {/* Left curtain */}
+        <div
+          className="pwr-curtain-left absolute top-0 left-0 w-1/2 h-full z-10"
+          style={{ background: 'linear-gradient(135deg, #0A0604 0%, #1A100A 50%, #120B07 100%)' }}
+        />
+        {/* Right curtain */}
+        <div
+          className="pwr-curtain-right absolute top-0 right-0 w-1/2 h-full z-10"
+          style={{ background: 'linear-gradient(225deg, #0A0604 0%, #1A100A 50%, #120B07 100%)' }}
+        />
+        {/* Gold seam line at center */}
+        <div
+          className="pwr-curtain-seam absolute top-0 left-1/2 -translate-x-1/2 w-px h-full z-20"
+          style={{ background: 'linear-gradient(to bottom, transparent, #F8B425, transparent)' }}
+        />
+        {/* Staggered fade-in content revealed behind curtains */}
+        <div className="pwr-reveal-content absolute inset-0 z-0 flex flex-col items-center justify-center gap-4">
+          <span
+            className="pwr-stagger-item font-sans text-gold-400/60 text-[0.65rem]"
+            style={{ letterSpacing: '0.5em', textTransform: 'uppercase' }}
+          >
+            Peshwarain Exclusive
+          </span>
+          <span
+            className="pwr-stagger-item font-display italic text-cream"
+            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.02em' }}
+          >
+            Our Signature Dishes
+          </span>
+          <span
+            className="pwr-stagger-item font-bangla text-gold-300/60"
+            style={{ fontSize: 'clamp(1rem, 1.8vw, 1.3rem)' }}
+          >
+            আমাদের বিশেষ খাবারসমূহ
+          </span>
+          <span
+            className="pwr-stagger-item font-urdu text-gold-400/50 text-lg"
+            dir="rtl"
+          >
+            ہمارے خاص پکوان
+          </span>
+        </div>
+      </div>
+
       {/* Back to top */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         data-cursor="Top"
-        className={`fixed bottom-7 right-7 z-40 w-11 h-11 rounded-full border border-gold-700/40 bg-[#120B07]/90 text-gold-400 flex items-center justify-center transition-all duration-500 hover:bg-[#F8B425] hover:text-[#120B07] hover:border-[#F8B425] hover:shadow-[0_0_20px_rgba(248,180,37,0.3)] ${
-          backToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
+        className={`fixed bottom-7 right-7 z-40 w-11 h-11 rounded-full border border-gold-700/40 bg-[#120B07]/90 text-gold-400 flex items-center justify-center transition-all duration-500 hover:bg-[#F8B425] hover:text-[#120B07] hover:border-[#F8B425] hover:shadow-[0_0_20px_rgba(248,180,37,0.3)] ${backToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+          }`}
         aria-label="উপরে যান"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
