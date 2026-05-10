@@ -17,7 +17,7 @@ export default function PageLoader() {
     const counter = counterRef.current
     if (!root || !counter) return
 
-    const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯']
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
     const toBn = (n: number) => String(n).split('').map(d => bnDigits[+d] ?? d).join('')
 
     const obj = { v: 0 }
@@ -60,7 +60,7 @@ export default function PageLoader() {
             finishLoading()
           }
           window.addEventListener('pwr-video-loaded', handler)
-          
+
           // Fallback to avoid infinite loading
           setTimeout(() => {
             window.removeEventListener('pwr-video-loaded', handler)

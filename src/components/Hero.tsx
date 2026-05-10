@@ -172,30 +172,33 @@ export default function Hero() {
     { scope: heroRef }
   )
 
-  // ── Staggered fade-out on scroll (hero content exits) ──
+  // ── Dramatic hero exit on scroll ──
   useGSAP(
     () => {
       const contentEl = heroRef.current?.querySelector('.relative.z-20')
       if (!contentEl) return
 
-      // Fade out hero text with staggered blur as user scrolls
+      // Hero text — clean fade-out with gentle lift
       gsap.to(contentEl.children, {
         opacity: 0,
-        y: -40,
-        filter: 'blur(12px)',
-        stagger: 0.08,
+        y: -50,
+        scale: 0.92,
+        filter: 'blur(10px)',
+        stagger: 0.06,
         ease: 'power2.in',
         scrollTrigger: {
           trigger: heroRef.current,
-          start: 'bottom 90%',
-          end: 'bottom 30%',
-          scrub: 0.8,
+          start: 'bottom bottom',
+          end: 'bottom 50%',
+          scrub: 0.5,
         },
       })
 
-      // Parallax the video slightly faster for depth
+      // Video — subtle darken and zoom
       gsap.to('[data-parallax]', {
+        scale: 1.2,
         yPercent: -15,
+        filter: 'brightness(0.2) saturate(0.4)',
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.current,
@@ -208,42 +211,76 @@ export default function Hero() {
     { scope: heroRef }
   )
 
-  // ── Split-screen reveal transition ──
+  // ── Dramatic split-screen reveal ──
   useGSAP(() => {
     const splitReveal = document.querySelector('.pwr-split-reveal')
     if (!splitReveal) return
 
-    // Initial state — stagger items hidden
-    gsap.set('.pwr-stagger-item', { opacity: 0, y: 30, filter: 'blur(8px)' })
+    // Initial states
+    gsap.set('.pwr-stagger-item', { opacity: 0, y: 60, scale: 0.8, filter: 'blur(14px)' })
+    gsap.set('.pwr-gold-flash', { opacity: 0, scale: 0.5 })
 
+    // Pin the reveal section for dramatic effect
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: splitReveal,
-        start: 'top 80%',
-        end: 'top 20%',
-        scrub: 0.6,
+        start: 'top 70%',
+        end: 'bottom 20%',
+        scrub: 0.4,
       },
     })
 
-    // Curtains slide apart
-    tl.to('.pwr-curtain-left', { xPercent: -100, ease: 'power3.inOut' }, 0)
-      .to('.pwr-curtain-right', { xPercent: 100, ease: 'power3.inOut' }, 0)
-      .to('.pwr-curtain-seam', { opacity: 0, duration: 0.3 }, 0)
+    // 1 · Curtains — 3D perspective slide with slight rotation
+    tl.to('.pwr-curtain-left', {
+      xPercent: -105,
+      rotateY: 15,
+      transformOrigin: 'left center',
+      ease: 'power4.inOut',
+    }, 0)
+      .to('.pwr-curtain-right', {
+        xPercent: 105,
+        rotateY: -15,
+        transformOrigin: 'right center',
+        ease: 'power4.inOut',
+      }, 0)
 
-    // Staggered fade-in of content behind curtains
-    gsap.to('.pwr-stagger-item', {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      stagger: 0.15,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: splitReveal,
-        start: 'top 60%',
-        end: 'top 25%',
-        scrub: 0.5,
-      },
-    })
+      // 2 · Gold seam — flash then dissolve
+      .to('.pwr-curtain-seam', {
+        scaleY: 1.3,
+        opacity: 1,
+        duration: 0.15,
+      }, 0)
+      .to('.pwr-curtain-seam', {
+        scaleY: 0,
+        opacity: 0,
+        ease: 'power2.in',
+        duration: 0.35,
+      }, 0.15)
+
+      // 3 · Gold flash burst at center
+      .to('.pwr-gold-flash', {
+        opacity: 1,
+        scale: 1.5,
+        duration: 0.2,
+        ease: 'power2.out',
+      }, 0.05)
+      .to('.pwr-gold-flash', {
+        opacity: 0,
+        scale: 3,
+        duration: 0.4,
+        ease: 'power2.in',
+      }, 0.25)
+
+      // 4 · Staggered text — dramatic scale-up entrance from below
+      .to('.pwr-stagger-item', {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: 'blur(0px)',
+        stagger: 0.1,
+        duration: 0.5,
+        ease: 'back.out(1.4)',
+      }, 0.2)
   })
 
   // Subtle mouse parallax — video only
@@ -346,22 +383,23 @@ export default function Hero() {
           {/* Headline — left-aligned, Tiro Bangla serif */}
           <h1
             ref={headlineRef}
-            className="pwr-hero-headline font-bangla text-cream"
+            className="pwr-hero-headline font-bangla"
             style={{
-              fontSize: 'clamp(2rem, 5.5vw, 5.2rem)',
-              lineHeight: 1.15,
+              fontSize: 'clamp(1.6rem, 4vw, 3.6rem)',
+              lineHeight: 1.18,
               letterSpacing: '0.01em',
               perspective: '800px',
+              color: '#E7DED1',
             }}
           >
             <span className="block">
-              <span className="pwr-hl-word inline-block text-[#F8B425] letterpress">নেহারী</span>
+              <span className="pwr-hl-word inline-block pwr-hero-gold">নেহারী</span>
               <span className="pwr-hl-word inline-block mx-[0.15em]">থেকে</span>
-              <span className="pwr-hl-word inline-block text-[#F8B425] letterpress">কাবাব</span>
+              <span className="pwr-hl-word inline-block pwr-hero-gold">কাবাব</span>
             </span>
             <span className="block mt-1 md:mt-2">
               <span className="pwr-hl-word inline-block">স্বাদে</span>
-              <span className="pwr-hl-word inline-block mx-[0.15em] text-[#F8B425] letterpress">আমরাই</span>
+              <span className="pwr-hl-word inline-block mx-[0.15em] pwr-hero-gold">আমরাই</span>
               <span className="pwr-hl-word inline-block">নবাব</span>
             </span>
           </h1>
@@ -394,24 +432,46 @@ export default function Hero() {
       </section>
 
       {/* ── Split-Screen Reveal Transition ── */}
-      <div className="pwr-split-reveal relative h-[50vh] md:h-[60vh] overflow-hidden" style={{ background: '#120B07' }}>
-        {/* Left curtain */}
+      <div className="pwr-split-reveal relative h-[35vh] md:h-[40vh] overflow-hidden" style={{ background: '#120B07', perspective: '1200px' }}>
+        {/* Left curtain — thicker with inner shadow */}
         <div
-          className="pwr-curtain-left absolute top-0 left-0 w-1/2 h-full z-10"
-          style={{ background: 'linear-gradient(135deg, #0A0604 0%, #1A100A 50%, #120B07 100%)' }}
+          className="pwr-curtain-left absolute top-0 left-0 w-[52%] h-full z-10"
+          style={{
+            background: 'linear-gradient(135deg, #0A0604 0%, #1A100A 40%, #120B07 100%)',
+            boxShadow: 'inset -30px 0 60px rgba(0,0,0,0.6)',
+          }}
         />
         {/* Right curtain */}
         <div
-          className="pwr-curtain-right absolute top-0 right-0 w-1/2 h-full z-10"
-          style={{ background: 'linear-gradient(225deg, #0A0604 0%, #1A100A 50%, #120B07 100%)' }}
+          className="pwr-curtain-right absolute top-0 right-0 w-[52%] h-full z-10"
+          style={{
+            background: 'linear-gradient(225deg, #0A0604 0%, #1A100A 40%, #120B07 100%)',
+            boxShadow: 'inset 30px 0 60px rgba(0,0,0,0.6)',
+          }}
         />
-        {/* Gold seam line at center */}
+
+        {/* Gold seam line — thicker, glowing */}
         <div
-          className="pwr-curtain-seam absolute top-0 left-1/2 -translate-x-1/2 w-px h-full z-20"
-          style={{ background: 'linear-gradient(to bottom, transparent, #F8B425, transparent)' }}
+          className="pwr-curtain-seam absolute top-0 left-1/2 -translate-x-1/2 w-[3px] h-full z-20"
+          style={{
+            background: 'linear-gradient(to bottom, transparent 10%, #F8B425 50%, transparent 90%)',
+            boxShadow: '0 0 20px rgba(248,180,37,0.6), 0 0 60px rgba(248,180,37,0.2)',
+          }}
         />
-        {/* Staggered fade-in content revealed behind curtains */}
-        <div className="pwr-reveal-content absolute inset-0 z-0 flex flex-col items-center justify-center gap-4">
+
+        {/* Gold flash burst — radial glow at the split point */}
+        <div
+          className="pwr-gold-flash absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-15 pointer-events-none"
+          style={{
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(248,180,37,0.5) 0%, rgba(248,180,37,0.15) 40%, transparent 70%)',
+          }}
+        />
+
+        {/* Revealed content behind curtains */}
+        <div className="pwr-reveal-content absolute inset-0 z-0 flex flex-col items-center justify-center gap-5">
           <span
             className="pwr-stagger-item font-sans text-gold-400/60 text-[0.65rem]"
             style={{ letterSpacing: '0.5em', textTransform: 'uppercase' }}
@@ -420,13 +480,13 @@ export default function Hero() {
           </span>
           <span
             className="pwr-stagger-item font-display italic text-cream"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.02em' }}
+            style={{ fontSize: 'clamp(2.2rem, 5vw, 4rem)', letterSpacing: '-0.02em' }}
           >
             Our Signature Dishes
           </span>
           <span
             className="pwr-stagger-item font-bangla text-gold-300/60"
-            style={{ fontSize: 'clamp(1rem, 1.8vw, 1.3rem)' }}
+            style={{ fontSize: 'clamp(1rem, 1.8vw, 1.3rem)', direction: 'ltr' as const }}
           >
             আমাদের বিশেষ খাবারসমূহ
           </span>

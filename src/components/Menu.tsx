@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -22,7 +22,8 @@ type Dish = {
   accent: string
 }
 
-const PLACEHOLDER_VIDEO = '/menu/placeholder.mp4'
+// Placeholder — swap each dish's video path later
+const PLACEHOLDER_VIDEO = '/hero-video.mp4'
 
 const DISHES: Dish[] = [
   {
@@ -101,6 +102,8 @@ export default function Menu() {
           gsap.from(media, {
             opacity: 0,
             scale: 1.06,
+            y: 50,
+            filter: 'blur(6px)',
             duration: 1.4,
             ease: 'power3.out',
             scrollTrigger: {
@@ -202,68 +205,156 @@ export default function Menu() {
 
 /* ═══════════════════════════════════════════════════
    DishBlock — one editorial row per dish
-   Portrait video showcase with image/video toggle
+   Portrait video showcase — autoplay, muted, looped
    ═══════════════════════════════════════════════════ */
 function DishBlock({ dish, index, total }: { dish: Dish; index: number; total: number }) {
   const isEven = index % 2 === 0
   const num = String(index + 1).padStart(2, '0')
-  const [showVideo, setShowVideo] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const [showVideo, setShowVideo] = useState(false)
+  const crossfadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleToggle = () => {
-    if (!showVideo) {
-      setShowVideo(true)
-      // wait for render then play
-      setTimeout(() => videoRef.current?.play(), 50)
-    } else {
-      videoRef.current?.pause()
-      setShowVideo(false)
+  // ── IntersectionObserver: controls entire lifecycle per card ──
+  // Enter → play video, after delay crossfade from image to video
+  // Leave → pause & reset video, snap back to image immediately
+  useEffect(() => {
+    const video = videoRef.current
+    const container = containerRef.current
+    if (!video || !container) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+
+          // Start playing the video (still hidden behind image)
+          video.muted = true
+          video.currentTime = 0
+          const p = video.play()
+          if (p && typeof p.then === 'function') {
+            p.catch(() => {
+              const resume = () => {
+                video.play().catch(() => {})
+                document.removeEventListener('click', resume)
+                document.removeEventListener('touchstart', resume)
+                document.removeEventListener('scroll', resume)
+              }
+              document.addEventListener('click', resume, { once: true, passive: true })
+              document.addEventListener('touchstart', resume, { once: true, passive: true })
+              document.addEventListener('scroll', resume, { once: true, passive: true })
+            })
+          }
+
+          // After 1.2s delay, crossfade from image → video
+          crossfadeTimerRef.current = setTimeout(() => {
+            setShowVideo(true)
+          }, 1200)
+        } else {
+          setIsVisible(false)
+
+          // Cancel any pending crossfade
+          if (crossfadeTimerRef.current) {
+            clearTimeout(crossfadeTimerRef.current)
+            crossfadeTimerRef.current = null
+          }
+
+          // Reset: pause video, seek to start, snap image back
+          video.pause()
+          video.currentTime = 0
+          setShowVideo(false)
+        }
+      },
+      { threshold: 0.25 }
+    )
+
+    observer.observe(container)
+    return () => {
+      observer.disconnect()
+      if (crossfadeTimerRef.current) {
+        clearTimeout(crossfadeTimerRef.current)
+      }
     }
-  }
+  }, [])
+
+  // Smooth mouse parallax on hover
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2
+
+    gsap.to(containerRef.current.querySelector('.pwr-dish-visual'), {
+      x: x * -6,
+      y: y * -6,
+      duration: 0.8,
+      ease: 'power2.out',
+    })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    if (!containerRef.current) return
+    gsap.to(containerRef.current.querySelector('.pwr-dish-visual'), {
+      x: 0,
+      y: 0,
+      duration: 0.6,
+      ease: 'power2.out',
+    })
+  }, [])
 
   return (
     <article className="pwr-menu-block grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
       {/* ── Portrait media showcase ── */}
       <div
+        ref={containerRef}
         className={`pwr-menu-media relative overflow-hidden group ${
           isEven ? 'lg:order-1' : 'lg:order-2'
         }`}
         style={{ aspectRatio: '3 / 4' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
-        {/* Static image — poster / fallback */}
+        {/* Static image — always shown first, fades out after video takes over */}
         <Image
           src={dish.img}
           alt={dish.name}
           fill
-          className={`object-cover transition-opacity duration-700 ${
-            showVideo ? 'opacity-0' : 'opacity-100'
-          }`}
+          className={`object-cover transition-opacity duration-[1.4s] ease-in-out ${showVideo ? 'opacity-0' : 'opacity-100'}`}
           sizes="(max-width: 1024px) 100vw, 50vw"
+          priority={index < 2}
+          style={{ zIndex: 1 }}
         />
 
-        {/* Portrait video — full cover */}
-        {showVideo && (
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover"
-            muted
-            loop
-            playsInline
-            autoPlay
-          >
-            <source src={dish.video} type="video/mp4" />
-          </video>
-        )}
+        {/* Portrait video — sits behind image, crossfades in after delay */}
+        <video
+          ref={videoRef}
+          className={`pwr-dish-visual absolute inset-0 w-full h-full object-cover transition-opacity duration-[1.4s] ease-in-out ${showVideo ? 'opacity-100' : 'opacity-0'}`}
+          muted
+          loop
+          playsInline
+          preload="auto"
+        >
+          <source src={dish.video} type="video/mp4" />
+        </video>
 
         {/* Cinematic overlay gradient */}
         <div
-          className="absolute inset-0 pointer-events-none z-10"
+          className="absolute inset-0 pointer-events-none z-10 transition-all duration-500"
           style={{
             background: `
-              linear-gradient(to top, rgba(18,11,7,0.75) 0%, transparent 40%),
-              linear-gradient(to bottom, rgba(18,11,7,0.45) 0%, transparent 25%)
+              linear-gradient(to top, rgba(18,11,7,0.82) 0%, rgba(18,11,7,0.15) 45%, transparent 100%),
+              linear-gradient(to bottom, rgba(18,11,7,0.5) 0%, transparent 25%)
             `,
+          }}
+        />
+
+        {/* Accent vignette — dish-specific color tint at edges */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[11] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          style={{
+            boxShadow: `inset 0 0 80px ${dish.accent}15, inset 0 0 0 1px ${dish.accent}25`,
           }}
         />
 
@@ -275,9 +366,9 @@ function DishBlock({ dish, index, total }: { dish: Dish; index: number; total: n
           N° {num}
         </div>
 
-        {/* Top-right: Tag + Play/Pause toggle */}
-        <div className="absolute top-5 right-5 z-20 flex items-center gap-2">
-          {dish.tag && (
+        {/* Top-right: Tag */}
+        {dish.tag && (
+          <div className="absolute top-5 right-5 z-20">
             <span
               className="font-sans text-[0.6rem] px-3 py-1.5 rounded-full border text-gold-300/90"
               style={{
@@ -290,37 +381,11 @@ function DishBlock({ dish, index, total }: { dish: Dish; index: number; total: n
             >
               {dish.tag}
             </span>
-          )}
+          </div>
+        )}
 
-          {/* Video toggle button */}
-          <button
-            onClick={handleToggle}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-            style={{
-              background: showVideo ? `${dish.accent}cc` : 'rgba(18,11,7,0.7)',
-              border: `1px solid ${dish.accent}55`,
-              backdropFilter: 'blur(8px)',
-              color: showVideo ? '#120B07' : dish.accent,
-            }}
-            aria-label={showVideo ? 'Pause video' : 'Play video'}
-          >
-            {showVideo ? (
-              /* Pause icon */
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
-            ) : (
-              /* Play icon */
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="6,4 20,12 6,20" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* Bottom overlay — dish name + price on the image */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 md:p-7 z-20">
+        {/* Bottom overlay — dish name on the video */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 md:p-7 z-20 transition-transform duration-500 group-hover:translate-y-[-4px]">
           <p
             className="font-display italic text-cream"
             style={{ fontSize: 'clamp(1.4rem, 2.2vw, 2rem)', lineHeight: 1.05, letterSpacing: '-0.02em' }}
@@ -332,18 +397,13 @@ function DishBlock({ dish, index, total }: { dish: Dish; index: number; total: n
           </div>
         </div>
 
-        {/* Video playing indicator */}
-        {showVideo && (
-          <div className="absolute bottom-5 right-5 z-20 flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: dish.accent }} />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: dish.accent }} />
-            </span>
-            <span className="font-sans text-[0.6rem] text-gold-300/80" style={{ letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-              Playing
-            </span>
-          </div>
-        )}
+        {/* Film grain texture */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[25] mix-blend-overlay opacity-[0.03]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          }}
+        />
       </div>
 
       {/* ── Text content ── */}
@@ -389,11 +449,17 @@ function DishBlock({ dish, index, total }: { dish: Dish; index: number; total: n
           {dish.bn}
         </p>
 
-        {/* Divider */}
-        <div
-          className="w-12 h-px mt-6 mb-6"
-          style={{ background: `${dish.accent}55` }}
-        />
+        {/* Divider with accent glow */}
+        <div className="relative mt-6 mb-6">
+          <div
+            className="w-12 h-px"
+            style={{ background: `${dish.accent}55` }}
+          />
+          <div
+            className="absolute top-0 left-0 w-12 h-px blur-sm"
+            style={{ background: `${dish.accent}35` }}
+          />
+        </div>
 
         {/* Description */}
         <p
@@ -402,44 +468,6 @@ function DishBlock({ dish, index, total }: { dish: Dish; index: number; total: n
         >
           {dish.desc}
         </p>
-
-
-
-        {/* Watch video CTA */}
-        <button
-          onClick={handleToggle}
-          className="mt-6 inline-flex items-center gap-3 group/cta w-fit"
-        >
-          <span
-            className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 group-hover/cta:scale-110"
-            style={{
-              border: `1px solid ${dish.accent}55`,
-              background: showVideo ? `${dish.accent}22` : 'transparent',
-              color: dish.accent,
-            }}
-          >
-            {showVideo ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
-            ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="6,4 20,12 6,20" />
-              </svg>
-            )}
-          </span>
-          <span
-            className="font-sans text-[0.75rem] transition-colors duration-300"
-            style={{
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: showVideo ? dish.accent : 'rgba(196,145,42,0.7)',
-            }}
-          >
-            {showVideo ? 'Pause Video' : 'Watch Preparation'}
-          </span>
-        </button>
       </div>
     </article>
   )
