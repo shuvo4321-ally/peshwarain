@@ -35,6 +35,7 @@ const config: Config = {
         display: ['var(--font-display)', 'serif'],
         body: ['var(--font-body)', 'serif'],
         sans: ['var(--font-sans)', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
         bangla: ['var(--font-bangla)', 'serif'],
         banglaPurna: ['var(--font-bangla-purna)', 'serif'],
         banglaDisplay: ['var(--font-bangla-display)', 'sans-serif'],

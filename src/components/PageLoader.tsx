@@ -1,91 +1,106 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import gsap from 'gsap'
+import { useEffect, useRef } from 'react'
 
 /**
- * Brand-mark page loader. ~1.6s reveal, then unmounts.
- * Bengali numeral counts to 100, golden seam wipes open the page.
+ * Brand page loader.
+ *
+ * The "P" mark sits still in gold. The PESHWARAIN wordmark lights
+ * letter-by-letter and a trilingual counter ticks 0 → 100 below it.
+ * Veils slide apart when the hero video signals ready.
  */
+
+const LETTERS = ['P', 'E', 'S', 'H', 'W', 'A', 'R', 'A', 'I', 'N']
+const BN = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
+const UR = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+const toBn = (n: number) => String(n).split('').map(d => BN[+d] ?? d).join('')
+const toUr = (n: number) => String(n).split('').map(d => UR[+d] ?? d).join('')
+
+const INTRO_DURATION = 3400
+
 export default function PageLoader() {
   const rootRef = useRef<HTMLDivElement>(null)
   const counterRef = useRef<HTMLSpanElement>(null)
-  const [done, setDone] = useState(false)
 
+  /* Counter ticker — rAF loop 0 → 100, cycling Bengali / Urdu / English numerals */
   useEffect(() => {
-    const root = rootRef.current
-    const counter = counterRef.current
-    if (!root || !counter) return
-
-    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
-    const toBn = (n: number) => String(n).split('').map(d => bnDigits[+d] ?? d).join('')
-
-    const obj = { v: 0 }
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-
-    tl.fromTo('.pwr-loader-mark', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.7 })
-      .fromTo('.pwr-loader-bar', { scaleX: 0 }, { scaleX: 1, duration: 1.0, ease: 'power2.inOut' }, '-=0.3')
-      .to(obj, {
-        v: 99,
-        duration: 1.0,
-        ease: 'power2.inOut',
-        onUpdate: () => {
-          if (counterRef.current) counterRef.current.textContent = toBn(Math.round(obj.v))
-        },
-      }, '-=1.0')
-      .add(() => {
-        let isFinishing = false
-        const finishLoading = () => {
-          if (isFinishing) return
-          isFinishing = true
-          gsap.timeline({ defaults: { ease: 'power3.out' } })
-            .to(obj, {
-              v: 100,
-              duration: 0.2,
-              onUpdate: () => {
-                if (counterRef.current) counterRef.current.textContent = toBn(Math.round(obj.v))
-              }
-            })
-            .to('.pwr-loader-content', { opacity: 0, y: -10, duration: 0.45, ease: 'power2.in' }, '+=0.15')
-            .to('.pwr-loader-veil-top', { y: '-100%', duration: 0.85, ease: 'power3.inOut' }, '-=0.15')
-            .to('.pwr-loader-veil-bot', { y: '100%', duration: 0.85, ease: 'power3.inOut' }, '<')
-            .add(() => setDone(true))
-        }
-
-        if ((window as any).pwrVideoLoaded) {
-          finishLoading()
-        } else {
-          const handler = () => {
-            window.removeEventListener('pwr-video-loaded', handler)
-            finishLoading()
-          }
-          window.addEventListener('pwr-video-loaded', handler)
-
-          // Fallback to avoid infinite loading
-          setTimeout(() => {
-            window.removeEventListener('pwr-video-loaded', handler)
-            finishLoading()
-          }, 6000)
-        }
-      })
-
-    return () => { tl.kill() }
+    const start = performance.now()
+    let raf = 0
+    const tick = (t: number) => {
+      const elapsed = t - start
+      if (elapsed >= INTRO_DURATION) {
+        if (counterRef.current) counterRef.current.textContent = toBn(100)
+        return
+      }
+      const n = Math.floor((elapsed / INTRO_DURATION) * 99)
+      const script = Math.floor((Date.now() / 280) % 3)
+      if (counterRef.current) {
+        counterRef.current.textContent =
+          script === 0 ? toBn(n) : script === 1 ? toUr(n) : String(n)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [])
 
-  if (done) return null
+  /* Wait for hero video, then trigger CSS exit */
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+
+    let exitFired = false
+    const fireExit = () => {
+      if (exitFired) return
+      exitFired = true
+      root.classList.add('pwr-loader--exit')
+    }
+
+    /* Hold loader at least until the intro animations have run */
+    const minDelay = new Promise<void>(r => setTimeout(r, INTRO_DURATION))
+    const videoReady = new Promise<void>(r => {
+      if ((window as any).pwrVideoLoaded) return r()
+      const handler = () => {
+        window.removeEventListener('pwr-video-loaded', handler)
+        r()
+      }
+      window.addEventListener('pwr-video-loaded', handler)
+      setTimeout(() => {
+        window.removeEventListener('pwr-video-loaded', handler)
+        r()
+      }, 5500)
+    })
+
+    let cancelled = false
+    Promise.all([minDelay, videoReady]).then(() => {
+      if (!cancelled) fireExit()
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div ref={rootRef} className="pwr-loader" aria-hidden>
       <div className="pwr-loader-veil-top" />
       <div className="pwr-loader-veil-bot" />
+
       <div className="pwr-loader-content">
-        <div className="pwr-loader-mark">
-          <span className="pwr-loader-glyph font-logo">P</span>
-          <span className="pwr-loader-urdu font-urdu" dir="rtl">پشوارین</span>
-        </div>
-        <div className="pwr-loader-bar" />
+        <span className="pwr-loader-glyph font-logo">P</span>
+
         <div className="pwr-loader-meta">
-          <span className="font-sans">PESHWARAIN</span>
+          <span className="pwr-loader-wordmark font-mono">
+            {LETTERS.map((l, i) => (
+              <span
+                key={i}
+                className="pwr-loader-letter"
+                style={{ animationDelay: `${0.4 + i * 0.12}s` }}
+              >
+                {l}
+              </span>
+            ))}
+          </span>
           <span ref={counterRef} className="font-bangla">০</span>
         </div>
       </div>

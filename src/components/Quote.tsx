@@ -169,7 +169,7 @@ export default function Quote() {
               letterSpacing: '-0.02em',
             }}
           >
-            Food is the language of love, and in Peshawar, we speak it in fire.
+            Nehari began as a morning ritual in Mughal Delhi. In Wari, we make it an evening one.
           </p>
 
           {/* Bengali */}
@@ -180,7 +180,7 @@ export default function Quote() {
               lineHeight: 1.7,
             }}
           >
-            খাবার হলো ভালোবাসার ভাষা — পেশোয়ারে আমরা তা আগুনে বলি।
+            নেহারি ছিল মুঘল দিল্লির ভোরের রীতি। ওয়ারীতে আমরা একে সন্ধ্যার করে তুলি।
           </p>
 
           {/* Urdu */}
@@ -193,18 +193,18 @@ export default function Quote() {
               letterSpacing: '0.02em',
             }}
           >
-            کھانا محبت کی زبان ہے، اور پشاور میں ہم اسے آگ سے بولتے ہیں۔
+            نہاری مغل دہلی کی صبح کی رسم تھی۔ واری میں ہم اسے شام کی بناتے ہیں۔
           </p>
 
           <cite className="qt-cite block mt-12 not-italic">
             <span className="ornament-line max-w-[280px] mx-auto">
               <span className="ornament-diamond" />
             </span>
-            <span className="block font-sans text-gold-500/85 text-[0.78rem] mt-4" style={{ letterSpacing: '0.32em', textTransform: 'uppercase' }}>
-              The House of Peshwarain
+            <span className="block font-mono text-gold-500/85 text-[0.78rem] mt-4" style={{ letterSpacing: '0.32em', textTransform: 'uppercase' }}>
+              Peshwarain · Wari · Since 2020
             </span>
             <span className="block font-bangla text-gold-400/55 text-[0.78rem] mt-1">
-              পেশোয়ারাইন
+              পেশোয়ারাইন · ওয়ারী
             </span>
           </cite>
         </blockquote>

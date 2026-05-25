@@ -34,7 +34,14 @@ export function splitText(el: HTMLElement, opts: { chars?: boolean; words?: bool
       // Use Intl.Segmenter to properly handle Bengali conjuncts (যুক্তবর্ণ)
       // Array.from() breaks multi-codepoint grapheme clusters like স্ব, ক্ষ্ণ
       const segmenter = new Intl.Segmenter('bn', { granularity: 'grapheme' })
-      const graphemes = [...segmenter.segment(token)].map(s => s.segment)
+      const segments = segmenter.segment(token)
+      const graphemes: string[] = []
+      const iterator = segments[Symbol.iterator]()
+      let result = iterator.next()
+      while (!result.done) {
+        graphemes.push(result.value.segment)
+        result = iterator.next()
+      }
       graphemes.forEach(ch => {
         const mask = document.createElement('span')
         mask.className = 'split-char-mask'

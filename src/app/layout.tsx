@@ -3,6 +3,7 @@ import {
   Fraunces,
   Newsreader,
   Inter,
+  JetBrains_Mono,
   Noto_Nastaliq_Urdu,
   Noto_Sans_Bengali,
   Tiro_Bangla,
@@ -40,6 +41,13 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600'],
   variable: '--font-sans',
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
   display: 'swap',
 })
 
@@ -117,7 +125,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://peshwarain.com'),
   title: 'পেশোয়ারাইন — খাঁটি পেশোয়ারি রান্না | ঢাকা',
   description:
-    'তীব্র মশলা, সমৃদ্ধ ঐতিহ্য এবং অবিস্মরণীয় স্বাদ — পেশোয়ারের হৃদয় থেকে তৈরি। চাপলি কাবাব, নমকীন গোশত, কড়াই ঢাকায়।',
+    'তীব্র মশলা, সমৃদ্ধ ঐতিহ্য এবং অবিস্মরণীয় স্বাদ — পেশোয়ারের হৃদয় থেকে তৈরি। মুরগ মাখানওয়ালা, নিহারি, মালাই বোটি ঢাকায়।',
   openGraph: {
     title: 'পেশোয়ারাইন — খাঁটি পেশোয়ারি রান্না',
     description: 'যেখানে ঐতিহ্য মিলে যায় আগুন ও স্বাদে।',
@@ -129,7 +137,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="bn"
-      className={`${rubikDirt.variable} ${fraunces.variable} ${newsreader.variable} ${inter.variable} ${urdu.variable} ${notoSansBengali.variable} ${tiroBangla.variable} ${momenshahiArdha.variable} ${momenshahiPurna.variable} ${codepotro.variable} ${hidayatullah.variable}`}
+      className={`${rubikDirt.variable} ${fraunces.variable} ${newsreader.variable} ${inter.variable} ${jetbrainsMono.variable} ${urdu.variable} ${notoSansBengali.variable} ${tiroBangla.variable} ${momenshahiArdha.variable} ${momenshahiPurna.variable} ${codepotro.variable} ${hidayatullah.variable}`}
     >
       <body>
         <PageLoader />

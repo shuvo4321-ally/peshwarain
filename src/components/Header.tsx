@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 const NAV_LINKS = [
-  { href: '#menu',        id: 'menu',        label: 'মেনু',     en: 'Menu',     urdu: 'مینیو' },
-  { href: '#story',       id: 'story',       label: 'গল্প',     en: 'Story',    urdu: 'قصہ' },
-  { href: '#reservation', id: 'reservation', label: 'বুকিং',    en: 'Reserve',  urdu: 'بکنگ' },
+  { href: '#menu',        id: 'menu',        label: 'মেনু',        en: 'Menu',        urdu: 'مینیو' },
+  { href: '#story',       id: 'story',       label: 'গল্প',        en: 'Story',       urdu: 'قصہ' },
+  { href: '#reservation', id: 'reservation', label: 'বুকিং',       en: 'Reserve',     urdu: 'بکنگ' },
 ]
 
 export default function Header() {
@@ -86,11 +86,24 @@ export default function Header() {
               style={{ background: '#F8B425', opacity: 0.9 }}
             />
           </span>
-          <span
-            className="font-urdu text-[#9A7640] self-end mt-1"
-            style={{ fontSize: '0.7rem', direction: 'rtl', lineHeight: 1 }}
-          >
-            پشوارین
+          <span className="self-end mt-1 flex items-center gap-2">
+            <span
+              className="font-urdu text-[#9A7640]"
+              style={{ fontSize: '0.7rem', direction: 'rtl', lineHeight: 1 }}
+            >
+              پشوارین
+            </span>
+            <span
+              aria-hidden
+              className="block w-3 h-px"
+              style={{ background: 'rgba(154,118,64,0.5)' }}
+            />
+            <span
+              className="font-mono text-[#9A7640]/85"
+              style={{ fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', lineHeight: 1 }}
+            >
+              Est 2020
+            </span>
           </span>
         </a>
 

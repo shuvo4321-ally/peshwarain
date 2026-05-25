@@ -24,19 +24,27 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>() {
         const isRight = el.classList.contains('reveal-right')
         const delay = parseFloat(el.dataset.revealDelay || '0')
 
-        gsap.from(el, {
-          opacity: 0,
-          y: isLeft || isRight ? 0 : 42,
-          x: isLeft ? -46 : isRight ? 46 : 0,
-          duration: 1.15,
-          ease: 'power3.out',
-          delay,
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 88%',
-            toggleActions: 'play none none reverse',
+        gsap.fromTo(
+          el,
+          {
+            opacity: 0,
+            y: isLeft || isRight ? 0 : 42,
+            x: isLeft ? -46 : isRight ? 46 : 0,
           },
-        })
+          {
+            opacity: 1,
+            y: 0,
+            x: 0,
+            duration: 1.15,
+            ease: 'power3.out',
+            delay,
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 88%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        )
       })
     },
     { scope: ref }

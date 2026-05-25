@@ -2,33 +2,46 @@ import Header from '@/components/Header'
 import Hero from '@/components/Hero'
 import Menu from '@/components/Menu'
 import Story from '@/components/Story'
-import Gallery from '@/components/Gallery'
 import Quote from '@/components/Quote'
 import Reservation from '@/components/Reservation'
-import Locations from '@/components/Locations'
 import Footer from '@/components/Footer'
-
-const Seam = () => (
-  <div className="max-w-container mx-auto px-6 md:px-12">
-    <div className="section-seam" />
-  </div>
-)
+import SectionOpener from '@/components/SectionOpener'
 
 export default function Home() {
   return (
     <main>
       <Header />
       <Hero />
+
+      <SectionOpener
+        number="I"
+        name="The Menu"
+        bn="মেনু"
+        urdu="مینیو"
+        tagline="From the Karahi · Wari"
+      />
       <Menu />
-      <Seam />
+
+      <SectionOpener
+        number="II"
+        name="The Story"
+        bn="গল্প"
+        urdu="قصہ"
+        tagline="Rankin Street · Since 2020"
+      />
       <Story />
-      <Seam />
-      <Gallery />
+
       <Quote />
-      <Seam />
+
+      <SectionOpener
+        number="III"
+        name="Reserve"
+        bn="বুকিং"
+        urdu="بکنگ"
+        tagline="A table awaits"
+      />
       <Reservation />
-      <Seam />
-      <Locations />
+
       <Footer />
     </main>
   )

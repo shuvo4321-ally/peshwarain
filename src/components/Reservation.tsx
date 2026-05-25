@@ -3,7 +3,18 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useReveal } from '@/hooks/useReveal'
 
-const CONTACT_ITEMS = [
+type ContactItem = {
+  icon: React.ReactNode
+  label: string
+  value: string
+  href?: string
+  external?: boolean
+}
+
+const MAPS_URL =
+  'https://www.google.com/maps/search/?api=1&query=16%2F2+Rankin+Street%2C+Wari%2C+Dhaka%2C+Bangladesh'
+
+const CONTACT_ITEMS: ContactItem[] = [
   {
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
@@ -12,7 +23,9 @@ const CONTACT_ITEMS = [
       </svg>
     ),
     label: 'Address',
-    value: 'Old Dhaka, Dhaka Division, Bangladesh',
+    value: '16/2 Rankin Street, Wari, Old Dhaka',
+    href: MAPS_URL,
+    external: true,
   },
   {
     icon: (
@@ -21,7 +34,8 @@ const CONTACT_ITEMS = [
       </svg>
     ),
     label: 'Call Us',
-    value: '+880 1XXX-XXXXXX',
+    value: '+880 1756-853532',
+    href: 'tel:+8801756853532',
   },
   {
     icon: (
@@ -31,7 +45,7 @@ const CONTACT_ITEMS = [
       </svg>
     ),
     label: 'Hours',
-    value: '12:00 PM — 12:00 AM, daily',
+    value: '5:00 PM — 11:00 PM, daily',
   },
 ]
 
@@ -48,14 +62,61 @@ export default function Reservation() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (status !== 'idle') return
+
+    const form = e.target as HTMLFormElement
+    const val = (id: string) =>
+      (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null)?.value?.trim() || ''
+
+    const name = val('res-name')
+    const phone = val('res-phone')
+    const date = val('res-date')
+    const time = val('res-time')
+    const guests = val('res-guests')
+    const arrangementVal = val('res-arrangement')
+    const occasion = val('res-occasion')
+    const message = val('res-message')
+
+    /* Map arrangement value -> human label */
+    const ARRANGEMENT_LABELS: Record<string, string> = {
+      standard: 'Standard Dining',
+      family: 'Family Platter (Nalli Gosht Nihari, Naan, Lassi)',
+      iftar: 'Iftar Package (Saffron Jalebi, Haleem, Chapli)',
+      catering: 'Catering enquiry — chefs from Pakistan',
+    }
+    const arrangement = ARRANGEMENT_LABELS[arrangementVal] ?? arrangementVal
+
+    /* Build a clean editorial WhatsApp message */
+    const lines = [
+      '*Peshwarain · Reservation Request*',
+      '_Wari · 16/2 Rankin Street_',
+      '',
+      `*Name:* ${name}`,
+      `*Phone:* ${phone}`,
+      `*Date:* ${date}`,
+      `*Time:* ${time}`,
+      `*Guests:* ${guests}`,
+      `*Arrangement:* ${arrangement}`,
+    ]
+    if (occasion) lines.push(`*Occasion:* ${occasion}`)
+    if (message) {
+      lines.push('')
+      lines.push(`*Notes:*\n${message}`)
+    }
+
+    const text = encodeURIComponent(lines.join('\n'))
+    const url = `https://wa.me/8801756853532?text=${text}`
+
     setStatus('submitting')
+    /* Brief beat for the button state, then open WhatsApp in a new tab */
     setTimeout(() => {
+      window.open(url, '_blank', 'noopener,noreferrer')
       setStatus('success')
       setTimeout(() => {
         setStatus('idle')
-        ;(e.target as HTMLFormElement).reset()
-      }, 3000)
-    }, 1400)
+        form.reset()
+      }, 4000)
+    }, 380)
   }
 
   return (
@@ -69,27 +130,24 @@ export default function Reservation() {
 
           {/* Info */}
           <div className="reveal-left">
-            <p className="eyebrow-rule font-sans text-gold-400/90 text-[0.95rem] mb-1" style={{ fontWeight: 500 }}>
-              Book Your Experience
-            </p>
-            <p className="font-bangla text-gold-300/75 text-sm mt-1 ml-11">
-              আপনার অভিজ্ঞতা বুক করুন
-            </p>
-            <p className="font-urdu text-gold-500/55 text-xs mt-1 mb-6 ml-11" style={{ direction: 'rtl' }}>
-              اپنا تجربہ بک کریں
+            <p
+              className="font-mono text-gold-400/85 mb-4"
+              style={{ fontSize: '0.7rem', fontWeight: 500, letterSpacing: '0.42em', textTransform: 'uppercase' }}
+            >
+              A table waits
             </p>
             <h2
-              className="font-display italic text-cream mb-5"
+              className="font-display italic text-cream letterpress mb-6 max-w-[20ch]"
               style={{
-                fontSize: 'clamp(2.1rem, 4vw, 3.3rem)',
-                lineHeight: 1.08,
-                letterSpacing: '-0.02em',
+                fontSize: 'clamp(1.6rem, 3vw, 2.4rem)',
+                lineHeight: 1.18,
+                letterSpacing: '-0.018em',
               }}
             >
-              Reserve Your Table
+              Pull a chair.<br />Stay till eleven.
             </h2>
-            <p className="font-body text-gold-200 text-lg leading-relaxed opacity-90 mb-10">
-              Gather the people you love for an unforgettable feast. Book a table — we'll handle the rest.
+            <p className="font-body italic text-gold-200 text-lg leading-relaxed opacity-90 mb-10 max-w-[42ch]">
+              Gather the people you love for an unforgettable feast. The night kitchen runs until eleven.
             </p>
 
             <div className="space-y-7">
@@ -97,10 +155,23 @@ export default function Reservation() {
                 <div key={item.label} className="flex items-start gap-4">
                   <div className="mt-0.5 text-gold-500 flex-shrink-0">{item.icon}</div>
                   <div>
-                    <p className="font-sans text-[0.85rem] text-gold-500/85 mb-0.5" style={{ fontWeight: 500 }}>
+                    <p className="font-mono text-[0.7rem] text-gold-500/85 mb-0.5" style={{ fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
                       {item.label}
                     </p>
-                    <p className="font-sans text-gold-200 text-base opacity-85">{item.value}</p>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        {...(item.external
+                          ? { target: '_blank', rel: 'noopener noreferrer' }
+                          : {})}
+                        className="font-body text-gold-200 opacity-90 hover:opacity-100 hover:text-gold-300 transition-all duration-300 inline-block"
+                        style={{ fontSize: '1.05rem', letterSpacing: '0.005em' }}
+                      >
+                        {item.value}
+                      </a>
+                    ) : (
+                      <p className="font-body text-gold-200 opacity-90" style={{ fontSize: '1.05rem', letterSpacing: '0.005em' }}>{item.value}</p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -131,8 +202,16 @@ export default function Reservation() {
                   <option>7 – 10 people</option>
                   <option>10+ (private)</option>
                 </Field>
+                <Field id="res-arrangement" label="Arrangement" as="select" required>
+                  <option value="standard">Standard Dining</option>
+                  <option value="family">Family Platter — Nalli Gosht Nihari, Naan, Lassi</option>
+                  <option value="iftar">Iftar Package — Saffron Jalebi, Haleem, Chapli</option>
+                  <option value="catering">Catering enquiry — chefs from Pakistan</option>
+                </Field>
+              </div>
+              <div className="mb-4">
                 <Field id="res-occasion" label="Occasion" as="select">
-                  <option value="">Optional</option>
+                  <option value="">Optional (Birthday, Anniversary, etc.)</option>
                   <option>Birthday</option>
                   <option>Anniversary</option>
                   <option>Family Gathering</option>
@@ -141,7 +220,7 @@ export default function Reservation() {
                 </Field>
               </div>
               <div className="mb-5">
-                <label htmlFor="res-message" className="block font-sans text-[0.85rem] text-gold-500/85 mb-2" style={{ fontWeight: 500 }}>
+                <label htmlFor="res-message" className="block font-mono text-[0.7rem] text-gold-500/85 mb-2" style={{ fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
                   Special Requests
                 </label>
                 <textarea
@@ -156,17 +235,31 @@ export default function Reservation() {
                 type="submit"
                 data-cursor="Reserve"
                 disabled={status !== 'idle'}
-                className={`w-full py-3.5 rounded-full font-sans transition-all duration-300 ${
+                className={`w-full py-3.5 rounded-full font-sans inline-flex items-center justify-center gap-2.5 transition-all duration-300 ${
                   status === 'success'
-                    ? 'bg-[#5C6B3C] text-cream border border-[#7A8B5C]'
+                    ? 'bg-[#25D366] text-white border border-[#25D366]'
                     : 'bg-gold-500 text-brown-500 hover:bg-gold-400 border border-gold-400'
-                } disabled:opacity-70`}
+                } disabled:opacity-80`}
                 style={{ fontWeight: 500 }}
               >
-                {status === 'idle'       && 'Reserve Table'}
-                {status === 'submitting' && 'Reserving…'}
-                {status === 'success'    && '✓ Reservation Confirmed'}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.198-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                </svg>
+                <span>
+                  {status === 'idle'       && 'Reserve via WhatsApp'}
+                  {status === 'submitting' && 'Opening WhatsApp…'}
+                  {status === 'success'    && '✓ Continue in WhatsApp'}
+                </span>
               </button>
+              <p className="font-mono text-gold-500/55 text-[0.6rem] mt-3 text-center" style={{ letterSpacing: '0.28em', textTransform: 'uppercase' }}>
+                Sent to +880 1756-853532
+              </p>
             </form>
           </div>
         </div>
@@ -188,7 +281,7 @@ function Field({
 }) {
   return (
     <div className="col-span-1">
-      <label htmlFor={id} className="block font-sans text-[0.85rem] text-gold-500/85 mb-2" style={{ fontWeight: 500 }}>
+      <label htmlFor={id} className="block font-mono text-[0.7rem] text-gold-500/85 mb-2" style={{ fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
         {label}
       </label>
       {as === 'select' || children ? (
