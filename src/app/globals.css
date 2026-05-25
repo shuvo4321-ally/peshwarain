@@ -7,6 +7,8 @@ html {
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: #A87521 #120B07;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -15,6 +17,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  max-width: 100%;
   font-family: var(--font-sans), sans-serif;
   font-feature-settings: 'kern', 'liga', 'calt';
 }

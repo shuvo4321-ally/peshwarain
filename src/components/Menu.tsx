@@ -124,7 +124,7 @@ export default function Menu() {
   )
 
   return (
-    <section id="menu" ref={sectionRef} className="py-24 md:py-36 relative z-10">
+    <section id="menu" ref={sectionRef} className="py-24 md:py-36 relative z-10 overflow-hidden">
       <div className="max-w-container mx-auto px-6 md:px-12">
         {/* In-section header — a complementary line, not a repeat of the opener */}
         <div className="pwr-menu-header flex flex-col items-center text-center mb-20 md:mb-28">

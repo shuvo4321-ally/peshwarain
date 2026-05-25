@@ -9,7 +9,7 @@ import SectionOpener from '@/components/SectionOpener'
 
 export default function Home() {
   return (
-    <main>
+    <main className="overflow-x-hidden w-full">
       <Header />
       <Hero />
 

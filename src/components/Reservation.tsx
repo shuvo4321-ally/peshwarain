@@ -122,7 +122,7 @@ export default function Reservation() {
   return (
     <section
       id="reservation"
-      className="py-24 md:py-36 relative z-10"
+      className="py-24 md:py-36 relative z-10 overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #120B07 0%, #1A100A 50%, #120B07 100%)' }}
     >
       <div ref={sectionRef} className="max-w-container mx-auto px-6 md:px-12">
