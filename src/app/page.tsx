@@ -4,6 +4,7 @@ import Menu from '@/components/Menu'
 import Story from '@/components/Story'
 import Quote from '@/components/Quote'
 import Reservation from '@/components/Reservation'
+import FindUs from '@/components/FindUs'
 import Footer from '@/components/Footer'
 import SectionOpener from '@/components/SectionOpener'
 
@@ -41,6 +42,15 @@ export default function Home() {
         tagline="A table awaits"
       />
       <Reservation />
+
+      <SectionOpener
+        number="IV"
+        name="Find Us"
+        bn="ঠিকানা"
+        urdu="پتہ"
+        tagline="Wari · Old Dhaka"
+      />
+      <FindUs />
 
       <Footer />
     </main>
