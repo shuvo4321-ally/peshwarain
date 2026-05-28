@@ -20,6 +20,7 @@ export default function Home() {
         bn="মেনু"
         urdu="مینیو"
         tagline="From the Karahi · Wari"
+        targetId="menu"
       />
       <Menu />
 
@@ -29,6 +30,7 @@ export default function Home() {
         bn="গল্প"
         urdu="قصہ"
         tagline="Rankin Street · Since 2020"
+        targetId="story"
       />
       <Story />
 
@@ -40,6 +42,7 @@ export default function Home() {
         bn="বুকিং"
         urdu="بکنگ"
         tagline="A table awaits"
+        targetId="reservation"
       />
       <Reservation />
 
@@ -49,6 +52,7 @@ export default function Home() {
         bn="ঠিকানা"
         urdu="پتہ"
         tagline="Wari · Old Dhaka"
+        targetId="findus"
       />
       <FindUs />
 

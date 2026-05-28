@@ -20,8 +20,12 @@ gsap.registerPlugin(ScrollTrigger, useGSAP)
    a small CTA below for users who want directions.
    ═══════════════════════════════════════════════════ */
 
-const ADDRESS_QUERY = '16%2F2+Rankin+Street%2C+Wari%2C+Dhaka%2C+Bangladesh'
-const MAPS_OPEN_URL = `https://www.google.com/maps/search/?api=1&query=${ADDRESS_QUERY}`
+/* Direct link to the verified PeshWarain · Wari business listing on Google Maps
+   (place_id resolved). Using the canonical place URL gives users the rich
+   business card with photos, reviews, hours and the "Directions" button,
+   instead of a plain address search. */
+const MAPS_OPEN_URL =
+  'https://www.google.com/maps/place/PeshWarain+~+Wari/@23.720091,90.4121368,17z/data=!3m1!4b1!4m6!3m5!1s0x3755b9be94ecaa81:0x9915c4f564e16f01!8m2!3d23.7200911!4d90.4170077!16s%2Fg%2F11lm3qnlgg'
 
 export default function FindUs() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -111,9 +115,16 @@ export default function FindUs() {
           </h3>
         </div>
 
-        {/* Map frame — borderless, dissolves into the page background */}
-        <div
-          className="fu-frame relative mx-auto"
+        {/* Map frame — borderless, dissolves into the page background.
+            The whole frame is a hyperlink: clicking anywhere on the
+            illustration opens Google Maps in a new tab. */}
+        <a
+          href={MAPS_OPEN_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open Peshwarain at 16/2 Rankin Street in Google Maps"
+          data-cursor="Map"
+          className="fu-frame block relative mx-auto cursor-pointer"
           style={{
             aspectRatio: '16 / 10',
             maxWidth: 1100,
@@ -170,7 +181,7 @@ export default function FindUs() {
             }}
           />
 
-        </div>
+        </a>
 
         {/* Address line */}
         <p

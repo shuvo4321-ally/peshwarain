@@ -29,10 +29,24 @@ type Props = {
   urdu: string
   /** Optional small caps subtitle line */
   tagline?: string
+  /** ID of the section to scroll to when this opener is tapped on mobile */
+  targetId?: string
 }
 
-export default function SectionOpener({ number, name, bn, urdu, tagline }: Props) {
+export default function SectionOpener({ number, name, bn, urdu, tagline, targetId }: Props) {
   const ref = useRef<HTMLElement>(null)
+
+  /* Mobile-only: tap anywhere on the chapter card → smooth scroll
+     past the pin and into the actual section, offset by the 80px
+     fixed header. Desktop keeps the pinned scroll-reveal as-is. */
+  const handleSkipToSection = () => {
+    if (!targetId) return
+    const el = document.getElementById(targetId)
+    if (!el) return
+    const headerOffset = 80
+    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
+    window.scrollTo({ top, behavior: 'smooth' })
+  }
 
   useGSAP(
     () => {
@@ -45,11 +59,17 @@ export default function SectionOpener({ number, name, bn, urdu, tagline }: Props
       gsap.set('.so-tagline', { opacity: 0, y: 12 })
       gsap.set('.so-bg', { opacity: 0 })
 
+      /* On mobile, the chapter card felt like it took too much scroll
+         to "play through". Halve the pinned scroll distance so the
+         reveal still lands but the user reaches actual content sooner. */
+      const isMobile =
+        typeof window !== 'undefined' && window.innerWidth < 768
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: ref.current,
           start: 'top top',
-          end: '+=100%',
+          end: isMobile ? '+=50%' : '+=100%',
           pin: true,
           scrub: 0.6,
           anticipatePin: 1,
@@ -80,16 +100,26 @@ export default function SectionOpener({ number, name, bn, urdu, tagline }: Props
     <section
       ref={ref}
       aria-label={name}
-      className="relative overflow-hidden"
-      style={{ height: '100vh', background: '#0A0604' }}
+      className="relative overflow-hidden h-[65vh] md:h-screen"
+      style={{
+        /* Top and bottom edges feather into #120B07 — the warm brown
+           that every neighbouring section starts/ends with — so the
+           join between sections dissolves instead of showing a seam.
+           The deep #0A0604 "stage" still occupies the middle of the
+           card where the chapter title sits. */
+        background:
+          'linear-gradient(to bottom, #120B07 0%, #0A0604 22%, #0A0604 78%, #120B07 100%)',
+      }}
     >
-      {/* Dark stage backdrop — appears when section enters */}
+      {/* Warm ember glow — radial only, no opaque base, so the
+          section's own top/bottom gradient stays visible at the
+          edges and the seam with neighbouring sections dissolves. */}
       <div
         aria-hidden
         className="so-bg absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse 80% 60% at center, rgba(193,90,54,0.16) 0%, rgba(248,180,37,0.06) 30%, transparent 70%), #0A0604',
+            'radial-gradient(ellipse 80% 60% at center, rgba(193,90,54,0.16) 0%, rgba(248,180,37,0.06) 30%, transparent 70%)',
         }}
       />
 
@@ -176,6 +206,18 @@ export default function SectionOpener({ number, name, bn, urdu, tagline }: Props
           </p>
         )}
       </div>
+
+      {/* Mobile-only invisible tap target — covers the whole card so
+          a tap anywhere skips into the actual section. Hidden on md+
+          where the pinned scroll-reveal is the intended experience. */}
+      {targetId && (
+        <button
+          type="button"
+          onClick={handleSkipToSection}
+          aria-label={`Skip to ${name}`}
+          className="md:hidden absolute inset-0 z-30 w-full h-full bg-transparent cursor-pointer"
+        />
+      )}
     </section>
   )
 }

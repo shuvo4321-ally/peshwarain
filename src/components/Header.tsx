@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { href: '#menu',        id: 'menu',        label: 'মেনু',        en: 'Menu',        urdu: 'مینیو' },
   { href: '#story',       id: 'story',       label: 'গল্প',        en: 'Story',       urdu: 'قصہ' },
   { href: '#reservation', id: 'reservation', label: 'বুকিং',       en: 'Reserve',     urdu: 'بکنگ' },
+  { href: '#findus',      id: 'findus',      label: 'ঠিকানা',      en: 'Find Us',     urdu: 'پتہ' },
 ]
 
 export default function Header() {

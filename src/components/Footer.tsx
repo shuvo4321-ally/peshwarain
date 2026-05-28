@@ -63,7 +63,7 @@ export default function Footer() {
             <ul className="space-y-4">
               <li>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query=16%2F2+Rankin+Street%2C+Wari%2C+Dhaka%2C+Bangladesh"
+                  href="https://www.google.com/maps/place/PeshWarain+~+Wari/@23.720091,90.4121368,17z/data=!3m1!4b1!4m6!3m5!1s0x3755b9be94ecaa81:0x9915c4f564e16f01!8m2!3d23.7200911!4d90.4170077!16s%2Fg%2F11lm3qnlgg"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-start gap-3 font-body text-gold-200 opacity-80 leading-relaxed hover:opacity-100 hover:text-gold-300 transition-all duration-300"
