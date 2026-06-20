@@ -200,7 +200,7 @@ export default function Quote() {
             <span className="ornament-line max-w-[280px] mx-auto">
               <span className="ornament-diamond" />
             </span>
-            <span className="block font-mono text-gold-500/85 text-[0.78rem] mt-4" style={{ letterSpacing: '0.32em', textTransform: 'uppercase' }}>
+            <span className="hidden md:block font-mono text-gold-500/85 text-[0.78rem] mt-4" style={{ letterSpacing: '0.32em', textTransform: 'uppercase' }}>
               Peshwarain · Wari · Since 2020
             </span>
             <span className="block font-bangla text-gold-400/55 text-[0.78rem] mt-1">

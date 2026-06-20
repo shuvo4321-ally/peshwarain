@@ -46,7 +46,7 @@ export default function Footer() {
                 پشوارین
               </span>
             </a>
-            <p className="font-display italic text-gold-300 text-base opacity-75 mb-1">
+            <p className="font-display italic text-gold-300 text-base opacity-75 mb-1 hidden md:block">
               Peshawari kitchen · Wari · since 2020
             </p>
             <p className="font-bangla text-gold-300/70 text-sm mb-1">
