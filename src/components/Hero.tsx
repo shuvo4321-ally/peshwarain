@@ -226,7 +226,7 @@ export default function Hero() {
           {/* Eyebrow ritual — same device as Menu's 'From Our Kitchen' */}
           <p
             ref={eyebrowRef}
-            className="pwr-hero-eyebrow eyebrow-rule font-mono text-gold-400/90 hidden md:inline-flex"
+            className="pwr-hero-eyebrow eyebrow-rule font-mono text-gold-400/90 !hidden md:!inline-flex"
             style={{
               fontSize: '0.78rem',
               fontWeight: 500,
