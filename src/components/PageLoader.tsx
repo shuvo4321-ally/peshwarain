@@ -46,6 +46,9 @@ export default function PageLoader() {
 
   /* Wait for hero video, then trigger CSS exit */
   useEffect(() => {
+    // Disable scroll while loader is active
+    document.body.style.overflow = 'hidden'
+
     const root = rootRef.current
     if (!root) return
 
@@ -54,6 +57,10 @@ export default function PageLoader() {
       if (exitFired) return
       exitFired = true
       root.classList.add('pwr-loader--exit')
+      // Restore scroll when loader exits
+      setTimeout(() => {
+        document.body.style.overflow = ''
+      }, 500) // Delay scroll restore slightly for smoother transition
     }
 
     /* Hold loader at least until the intro animations have run */
@@ -78,6 +85,7 @@ export default function PageLoader() {
 
     return () => {
       cancelled = true
+      document.body.style.overflow = ''
     }
   }, [])
 
